@@ -99,7 +99,7 @@ export default function Home() {
                   ref={editInputRef}
                   onChange={(e) => setTempTitle(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter") {
+                    if (e.key === "Enter" && tempTitle.length > 0) {
                       saveTodo(todo.id);
                     }
                   }}
@@ -108,6 +108,7 @@ export default function Home() {
                 <button
                   onClick={() => saveTodo(todo.id)}
                   className="bg-blue-100"
+                  disabled={tempTitle.length === 0}
                 >
                   Save
                 </button>
