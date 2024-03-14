@@ -1,27 +1,31 @@
 "use client";
 
+import type { Todo } from "@prisma/client";
 import { FormEvent, useEffect, useRef, useState } from "react";
 
-interface Todo {
-  id: number;
-  title: string;
-  isCompleted: boolean;
-}
-
-const fakeTodos: Todo[] = [
-  { id: 1, title: "Buy groceries", isCompleted: false },
-  { id: 2, title: "Read a book", isCompleted: false },
-  { id: 3, title: "Write a blog post", isCompleted: true },
-  { id: 4, title: "Work out", isCompleted: false },
-  { id: 5, title: "Call mom", isCompleted: true },
-];
-
 export default function Home() {
-  const [todos, setTodos] = useState<Todo[]>(fakeTodos);
+  const [todos, setTodos] = useState<Todo[]>([]);
   const [newTodoText, setNewTodoText] = useState("");
   const [editingId, setEditingId] = useState<number | null>(null);
   const [tempTitle, setTempTitle] = useState("");
   const editInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    async function fetchTodos() {
+      try {
+        const response = await fetch("/api/todos");
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setTodos(data);
+      } catch (error) {
+        console.error("Fetching todos failed: ", error);
+      }
+    }
+
+    fetchTodos();
+  }, []);
 
   useEffect(() => {
     if (editingId !== null && editInputRef.current) {
@@ -39,33 +43,71 @@ export default function Home() {
     setTempTitle("");
   };
 
-  const saveTodo = (id: number) => {
-    setTodos((currTodos) =>
-      currTodos.map((todo) =>
-        todo.id === id ? { ...todo, title: tempTitle } : todo
-      )
-    );
-    cancelEditing();
-  };
-
-  const addTodo = (event: FormEvent) => {
+  const addTodo = async (event: FormEvent) => {
     event.preventDefault();
-    const newId =
-      todos.length > 0 ? Math.max(...todos.map((todo) => todo.id)) + 1 : 1;
-    setTodos([...todos, { id: newId, title: newTodoText, isCompleted: false }]);
+    try {
+      const response = await fetch(`/api/todos`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ title: newTodoText }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const newTodo: Todo = await response.json();
+      setTodos((currentTodos) => [...currentTodos, newTodo]);
+    } catch (error) {
+      console.error("Updating todo failed: ", error);
+    }
+
     setNewTodoText("");
   };
 
-  const updateTodo = (id: number) => {
-    setTodos((currTodos) =>
-      currTodos.map((todo) =>
-        todo.id === id ? { ...todo, isCompleted: !todo.isCompleted } : todo
-      )
-    );
+  const updateTodo = async (selectedTodo: Todo) => {
+    try {
+      const response = await fetch(`/api/todos/${selectedTodo.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ ...selectedTodo }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const updatedTodo: Todo = await response.json();
+      setTodos((currTodos) =>
+        currTodos.map((todo) =>
+          todo.id === selectedTodo.id ? updatedTodo : todo
+        )
+      );
+    } catch (error) {
+      console.error("Updating todo failed: ", error);
+    }
+
+    cancelEditing();
   };
 
-  const deleteTodo = (id: number) => {
-    setTodos((currTodos) => currTodos.filter((todo) => todo.id !== id));
+  const deleteTodo = async (id: number) => {
+    try {
+      const response = await fetch(`/api/todos/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      setTodos((currTodos) => currTodos.filter((todo) => todo.id !== id));
+    } catch (error) {
+      console.error("Deleting todo failed: ", error);
+    }
   };
 
   return (
@@ -88,8 +130,10 @@ export default function Home() {
           <li key={todo.id} className="flex gap-4">
             <input
               type="checkbox"
-              checked={todo.isCompleted}
-              onChange={() => updateTodo(todo.id)}
+              checked={todo.completed}
+              onChange={() =>
+                updateTodo({ ...todo, completed: !todo.completed })
+              }
             />
             {editingId === todo.id ? (
               <>
@@ -100,13 +144,13 @@ export default function Home() {
                   onChange={(e) => setTempTitle(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && tempTitle.length > 0) {
-                      saveTodo(todo.id);
+                      updateTodo({ ...todo, title: tempTitle });
                     }
                   }}
                   className="border-2 border-lime-600 outline-lime-400"
                 />
                 <button
-                  onClick={() => saveTodo(todo.id)}
+                  onClick={() => updateTodo({ ...todo, title: tempTitle })}
                   className="bg-blue-100"
                   disabled={tempTitle.length === 0}
                 >
@@ -118,7 +162,7 @@ export default function Home() {
               </>
             ) : (
               <>
-                <span className={todo.isCompleted ? "line-through" : ""}>
+                <span className={todo.completed ? "line-through" : ""}>
                   {todo.title}
                 </span>
                 <button
