@@ -3,46 +3,36 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function main() {
-  const todo1 = await prisma.todo.upsert({
-    where: { id: 1 },
+  const user = await prisma.user.upsert({
+    where: { email: "jared.c.gentry@gmail.com" },
     update: {},
     create: {
-      title: "walk the dog",
+      name: "Jared Gentry",
+      email: "jared.c.gentry@gmail.com",
+      image: "https://avatars.githubusercontent.com/u/20710009?v=4",
     },
   });
 
-  const todo2 = await prisma.todo.upsert({
-    where: { id: 2 },
-    update: {},
-    create: {
-      title: "buy some milk",
-    },
-  });
+  const todos = [
+    { title: "walk the dog" },
+    { title: "buy some milk" },
+    { title: "read a book" },
+    { title: "practice coding" },
+    { title: "meditate for 20 minutes" },
+  ];
 
-  const todo3 = await prisma.todo.upsert({
-    where: { id: 3 },
-    update: {},
-    create: {
-      title: "read a book",
-    },
-  });
-
-  const todo4 = await prisma.todo.upsert({
-    where: { id: 4 },
-    update: {},
-    create: {
-      title: "practice coding",
-    },
-  });
-
-  const todo5 = await prisma.todo.upsert({
-    where: { id: 5 },
-    update: {},
-    create: {
-      title: "meditate for 20 minutes",
-    },
-  });
+  for (let i = 0; i < todos.length; i++) {
+    await prisma.todo.upsert({
+      where: { id: i + 1 },
+      update: {},
+      create: {
+        title: todos[i].title,
+        user: { connect: { id: user.id } },
+      },
+    });
+  }
 }
+
 main()
   .then(async () => {
     await prisma.$disconnect();

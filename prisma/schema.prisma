@@ -19,4 +19,18 @@ model Todo {
   updatedAt DateTime @updatedAt
   title     String   @db.VarChar(255)
   completed Boolean  @default(false)
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+}
+
+model User {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  name      String?
+  email     String?  @unique
+  image     String?
+
+  todos Todo[]
 }
