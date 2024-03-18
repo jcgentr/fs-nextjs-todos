@@ -1,26 +1,15 @@
 import { NextApiRequest } from "next";
-import { auth } from "@/lib/auth";
+import { authenticateAndFindUser } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { handleApiError } from "@/lib/errorHandling";
 
 // READ todos/{id}
 export async function GET(
   req: NextApiRequest,
   { params }: { params: { id: string } }
 ) {
-  const { isAuthenticated, token } = await auth(req);
-
-  if (isAuthenticated && token?.email) {
-    const user = await prisma.user.findUnique({
-      where: {
-        email: token.email,
-      },
-    });
-
-    if (!user) {
-      return new Response(JSON.stringify({ error: "User not found" }), {
-        status: 404,
-      });
-    }
+  try {
+    const user = await authenticateAndFindUser(req);
 
     const todo = await prisma.todo.findUnique({
       where: {
@@ -30,16 +19,14 @@ export async function GET(
     });
 
     if (todo) {
-      return Response.json(todo);
+      return new Response(JSON.stringify(todo), { status: 200 });
     } else {
       return new Response(JSON.stringify({ error: "Not found" }), {
         status: 404,
       });
     }
-  } else {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401,
-    });
+  } catch (error) {
+    return handleApiError(error);
   }
 }
 
@@ -48,23 +35,10 @@ export async function PUT(
   req: Request,
   { params }: { params: { id: string } }
 ) {
-  const { isAuthenticated, token } = await auth(
-    req as unknown as NextApiRequest
-  );
-
-  if (isAuthenticated && token?.email) {
-    const user = await prisma.user.findUnique({
-      where: {
-        email: token.email,
-      },
-    });
-
-    if (!user) {
-      return new Response(JSON.stringify({ error: "User not found" }), {
-        status: 404,
-      });
-    }
-
+  try {
+    const user = await authenticateAndFindUser(
+      req as unknown as NextApiRequest
+    );
     const { title, completed } = await req.json();
 
     if (
@@ -95,14 +69,10 @@ export async function PUT(
       });
     } catch (error) {
       // If the todo item is not found, Prisma will throw an error
-      return new Response(JSON.stringify({ error: "Todo not found" }), {
-        status: 404, // Not Found
-      });
+      throw { status: 404, message: "Todo not found" };
     }
-  } else {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401,
-    });
+  } catch (error) {
+    return handleApiError(error);
   }
 }
 
@@ -111,20 +81,8 @@ export async function DELETE(
   req: NextApiRequest,
   { params }: { params: { id: string } }
 ) {
-  const { isAuthenticated, token } = await auth(req);
-
-  if (isAuthenticated && token?.email) {
-    const user = await prisma.user.findUnique({
-      where: {
-        email: token.email,
-      },
-    });
-
-    if (!user) {
-      return new Response(JSON.stringify({ error: "User not found" }), {
-        status: 404,
-      });
-    }
+  try {
+    const user = await authenticateAndFindUser(req);
 
     try {
       await prisma.todo.delete({
@@ -134,13 +92,9 @@ export async function DELETE(
       return new Response(null, { status: 204 }); // No Content
     } catch (error) {
       // If the todo item is not found, Prisma will throw an error
-      return new Response(JSON.stringify({ error: "Todo not found" }), {
-        status: 404, // Not Found
-      });
+      throw { status: 404, message: "Todo not found" };
     }
-  } else {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401,
-    });
+  } catch (error) {
+    return handleApiError(error);
   }
 }
