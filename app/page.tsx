@@ -1,5 +1,8 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import type { Todo } from "@prisma/client";
 import { FormEvent, useEffect, useRef, useState } from "react";
 
@@ -111,33 +114,31 @@ export default function Home() {
   };
 
   return (
-    <main>
+    <main className="max-w-sm mx-auto">
       <h1 className="text-4xl">Todos</h1>
-      <form onSubmit={addTodo}>
-        <input
+      <form
+        onSubmit={addTodo}
+        className="flex w-full max-w-sm items-center space-x-2"
+      >
+        <Input
           type="text"
           placeholder="Add new todo"
           value={newTodoText}
           onChange={(e) => setNewTodoText(e.target.value)}
-          className="border-2 border-lime-600 outline-lime-400"
         />
-        <button type="submit" disabled={newTodoText.length === 0}>
+        <Button type="submit" disabled={newTodoText.length === 0}>
           Add
-        </button>
+        </Button>
       </form>
       <ul>
         {todos.map((todo) => (
-          <li key={todo.id} className="flex gap-4">
-            <input
-              type="checkbox"
-              checked={todo.completed}
-              onChange={() =>
-                updateTodo({ ...todo, completed: !todo.completed })
-              }
-            />
+          <li
+            key={todo.id}
+            className="flex justify-between items-center ml-2 my-6"
+          >
             {editingId === todo.id ? (
               <>
-                <input
+                <Input
                   type="text"
                   value={tempTitle}
                   ref={editInputRef}
@@ -147,35 +148,50 @@ export default function Home() {
                       updateTodo({ ...todo, title: tempTitle });
                     }
                   }}
-                  className="border-2 border-lime-600 outline-lime-400"
+                  className="mr-2"
                 />
-                <button
-                  onClick={() => updateTodo({ ...todo, title: tempTitle })}
-                  className="bg-blue-100"
-                  disabled={tempTitle.length === 0}
-                >
-                  Save
-                </button>
-                <button onClick={cancelEditing} className="bg-yellow-100">
-                  Cancel
-                </button>
+                <div className="flex gap-2 self-end">
+                  <Button
+                    onClick={() => updateTodo({ ...todo, title: tempTitle })}
+                    variant="secondary"
+                    disabled={tempTitle.length === 0}
+                  >
+                    Save
+                  </Button>
+                  <Button onClick={cancelEditing} variant="outline">
+                    Cancel
+                  </Button>
+                </div>
               </>
             ) : (
               <>
-                <span className={todo.completed ? "line-through" : ""}>
-                  {todo.title}
-                </span>
-                <button
-                  onClick={() => startEditing(todo)}
-                  className="bg-green-100"
-                >
-                  Edit
-                </button>
+                <div className="flex items-center gap-4">
+                  <Checkbox
+                    checked={todo.completed}
+                    onCheckedChange={() =>
+                      updateTodo({ ...todo, completed: !todo.completed })
+                    }
+                  />
+                  <span className={todo.completed ? "line-through" : ""}>
+                    {todo.title}
+                  </span>
+                </div>
+                <div className="flex gap-2 self-end">
+                  <Button
+                    onClick={() => startEditing(todo)}
+                    variant="secondary"
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    onClick={() => deleteTodo(todo.id)}
+                    variant="destructive"
+                  >
+                    Delete
+                  </Button>
+                </div>
               </>
             )}
-            <button onClick={() => deleteTodo(todo.id)} className="bg-red-100">
-              Delete
-            </button>
           </li>
         ))}
       </ul>
