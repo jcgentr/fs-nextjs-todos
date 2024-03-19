@@ -114,15 +114,12 @@ export default function Home() {
   };
 
   return (
-    <main className="max-w-sm mx-auto">
-      <h1 className="text-4xl">Todos</h1>
-      <form
-        onSubmit={addTodo}
-        className="flex w-full max-w-sm items-center space-x-2"
-      >
+    <main className="max-w-md mx-auto p-2">
+      <form onSubmit={addTodo} className="flex w-full items-center space-x-2">
         <Input
           type="text"
-          placeholder="Add new todo"
+          aria-label="Write a new todo item"
+          placeholder="E.g. Adopt an owl"
           value={newTodoText}
           onChange={(e) => setNewTodoText(e.target.value)}
         />
