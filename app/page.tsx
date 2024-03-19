@@ -4,6 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import type { Todo } from "@prisma/client";
+import {
+  TooltipProvider,
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
+import { Pencil, Trash } from "lucide-react";
 import { FormEvent, useEffect, useRef, useState } from "react";
 
 export default function Home() {
@@ -131,7 +138,7 @@ export default function Home() {
         {todos.map((todo) => (
           <li
             key={todo.id}
-            className="flex justify-between items-center ml-2 my-6"
+            className="flex justify-between items-center ml-2 my-4 group"
           >
             {editingId === todo.id ? (
               <>
@@ -173,19 +180,39 @@ export default function Home() {
                     {todo.title}
                   </span>
                 </div>
-                <div className="flex gap-2 self-end">
-                  <Button
-                    onClick={() => startEditing(todo)}
-                    variant="secondary"
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    onClick={() => deleteTodo(todo.id)}
-                    variant="destructive"
-                  >
-                    Delete
-                  </Button>
+                <div className="flex gap-2 self-end opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none group-hover:pointer-events-auto">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          onClick={() => startEditing(todo)}
+                          variant="secondary"
+                          size="icon"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent sideOffset={5}>
+                        <p>Edit todo</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          onClick={() => deleteTodo(todo.id)}
+                          variant="destructive"
+                        >
+                          <Trash className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent sideOffset={5}>
+                        <p>Delete todo</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
               </>
             )}
