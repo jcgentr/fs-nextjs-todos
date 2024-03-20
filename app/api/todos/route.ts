@@ -42,6 +42,7 @@ export async function GET(req: NextRequest) {
 
     return new Response(JSON.stringify(allTodos), { status: 200 });
   } catch (error) {
+    console.log(error);
     return handleApiError(error);
   }
 }
