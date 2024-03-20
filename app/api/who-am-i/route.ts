@@ -1,7 +1,7 @@
-import { NextApiRequest } from "next";
 import { auth } from "@/lib/auth";
+import { NextRequest } from "next/server";
 
-export async function GET(req: NextApiRequest) {
+export async function GET(req: NextRequest) {
   const { isAuthenticated, token } = await auth(req);
 
   if (isAuthenticated) {

@@ -1,13 +1,13 @@
-import { NextApiRequest } from "next";
 import { getToken } from "next-auth/jwt";
 import prisma from "@/lib/prisma";
+import { NextRequest } from "next/server";
 
-export async function auth(req: NextApiRequest) {
+export async function auth(req: NextRequest) {
   const token = await getToken({ req });
   return { isAuthenticated: token !== null, token };
 }
 
-export async function authenticateAndFindUser(req: NextApiRequest) {
+export async function authenticateAndFindUser(req: NextRequest) {
   const { isAuthenticated, token } = await auth(req);
 
   if (!isAuthenticated || !token?.email) {

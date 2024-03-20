@@ -1,11 +1,11 @@
-import { NextApiRequest } from "next";
 import { authenticateAndFindUser } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { handleApiError } from "@/lib/errorHandling";
+import { NextRequest } from "next/server";
 
 // READ todos/{id}
 export async function GET(
-  req: NextApiRequest,
+  req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
@@ -36,9 +36,7 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const user = await authenticateAndFindUser(
-      req as unknown as NextApiRequest
-    );
+    const user = await authenticateAndFindUser(req as unknown as NextRequest);
     const { title, completed } = await req.json();
 
     if (
@@ -78,7 +76,7 @@ export async function PUT(
 
 // DELETE
 export async function DELETE(
-  req: NextApiRequest,
+  req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {

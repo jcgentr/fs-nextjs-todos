@@ -1,14 +1,12 @@
-import { NextApiRequest } from "next";
 import { authenticateAndFindUser } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { handleApiError } from "@/lib/errorHandling";
+import { NextRequest } from "next/server";
 
 // CREATE one
 export async function POST(req: Request) {
   try {
-    const user = await authenticateAndFindUser(
-      req as unknown as NextApiRequest
-    );
+    const user = await authenticateAndFindUser(req as unknown as NextRequest);
 
     const { title } = await req.json();
 
@@ -32,7 +30,7 @@ export async function POST(req: Request) {
 }
 
 // READ all
-export async function GET(req: NextApiRequest) {
+export async function GET(req: NextRequest) {
   try {
     const user = await authenticateAndFindUser(req);
 
