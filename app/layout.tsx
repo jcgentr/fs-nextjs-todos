@@ -2,6 +2,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { Inter as FontSans } from "next/font/google";
 import { getServerSession } from "next-auth";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 import SessionProvider from "../components/SessionProvider";
 import NavMenu from "../components/NavMenu";
@@ -36,6 +37,7 @@ export default async function RootLayout({
           <NavMenu />
           {children}
         </SessionProvider>
+        <SpeedInsights />
       </body>
     </html>
   );
