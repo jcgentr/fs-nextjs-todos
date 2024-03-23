@@ -9,15 +9,15 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url = env("VERCEL_PRISMA_URL") // uses connection pooling
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
 }
 
 model Todo {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  title     String   @db.VarChar(255)
+  title     String
   completed Boolean  @default(false)
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
